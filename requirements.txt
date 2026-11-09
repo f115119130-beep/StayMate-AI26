@@ -1,4 +1,4 @@
 gradio
 openai
 python-dotenv
-sentence-transformers
+scikit-learn

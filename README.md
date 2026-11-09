@@ -1,29 +1,41 @@
-# AI 飯店客服（課程作業示範）
+# StayMate-AI26 — Sunny Stay 晴旅小屋 (V2.2)
 
-## 功能
-- Gradio 對話介面，保留多輪對話歷史
-- SQLite 由 `hotel_info.csv` 與 `hotel_items.csv` 在啟動時建立
-- 四個工具：飯店資訊查詢、房型／服務查詢、住宿費用計算、轉真人指引
-- 右側顯示工具名稱、參數與回傳結果
-- 僅執行程式中明確登記的工具，並設有最大工具呼叫步數
+本機課程示範：**LLM + Agent (Tool Calling) + RAG (TF-IDF)**，加上會員登入、查房、SQLite 訂房、會員個人訂單與全站浮動 AI 客服。
 
-## 重要說明
-本專案中的「晴旅小屋」為虛構示範飯店；價格與資料是課程測試資料，不代表真實飯店或即時房況。程式不會真的建立訂房、取消或退款，也沒有設定真實電話。
+## 本機執行
 
-## 安裝與執行
-1. 安裝 Python 3.10 或更新版本。
-2. 在此資料夾開啟終端機，執行 `pip install -r requirements.txt`。
-3. 複製 `.env.example` 並命名為 `.env`。
-4. 在 `.env` 填入課堂提供的模型名稱、API 金鑰與相容 API 端點。
-5. 執行 `python app.py`，再開啟終端機顯示的 Gradio 網址。
+1. 使用 Python 3.10+，在虛擬環境中執行 `pip install -r requirements.txt`。
+2. 複製 `.env.example` 為 `.env`，只在自己的電腦填入學校提供的 `MODEL_NAME`、`API_KEY`、`LLM_API_URL`。**不要將 `.env` 上傳 GitHub。**
+3. 執行 `python app.py`，瀏覽 `http://127.0.0.1:7860`。
+4. 免登入可使用「AI 客服」及右下角浮動 AI。註冊會員後可查房並建立模擬訂單，再問 AI「我的訂單有哪些？」。
 
-## 專案檔案
-- `app.py`：客服 Agent 與 Gradio 介面
-- `hotel_info.csv`：飯店資訊表（至少 8 個主題）
-- `hotel_items.csv`：房型／方案／服務表（至少 15 筆）
-- `.env.example`：環境變數範本，不含 API 金鑰
-- `requirements.txt`：套件清單
-- `.gitignore`：避免上傳 `.env` 與 SQLite 資料庫檔
+## AI 三大技術
 
-## 測試提醒
-請實際測試資料庫可回答、需要計算、資料缺漏／轉真人、非客服話題四種類型，並完成至少 10 題工具選擇測試。請將測試結果與工具軌跡截圖放進作業報告。
+- **LLM**：透過學校 OpenAI-compatible API 呼叫 `MODEL_NAME`。
+- **Agent**：`run_agent` 根據需求呼叫 `list_rooms`、`check_room_availability`、`get_my_bookings` 等工具，並顯示 Tool Trace。
+- **RAG**：`rag_tfidf.py` 以 TF-IDF 從 `hotel_rules.txt` 搜尋相關政策，再提供給 LLM。
+
+## 訂房與安全
+
+- 訪客可查詢房型與模擬庫存，但只有已登入會員能建立、查詢或取消自己的訂單。
+- `prepare_booking` 只建立建議草稿；正式訂單由顧客在訂房頁按下確認後才寫入 SQLite。
+- 會員查詢工具從伺服器驗證的 session 取得身分，AI 不可指定 user_id。
+- 訂房以 SQLite `BEGIN IMMEDIATE` 交易重新檢查每晚庫存，避免超額訂房。
+- `hotel_app.db` 與 `bookings.db` 均為本機產生，不上傳 GitHub。
+- 這是虛構飯店與模擬訂單，不含真實付款、真實房間庫存或商用登入安全保證。登入工作階段保存在本機記憶體，重新啟動後須重新登入。
+
+## GitHub
+
+
+## 測試
+
+
+## 模組化目錄說明
+
+- `services/booking_service.py` 是實際使用的會員、庫存及訂房邏輯；`booking_backend.py` 是舊版匯入相容層。
+- `services/auth_service.py`、`services/room_service.py`、`database/connection.py` 提供可重用介面。
+- `tools/booking_tools.py` 提供獨立查房與個人訂單查詢介面。
+- `pages/*.py` 目前是頁面元件的起點；**完整的 Gradio 頁面與 AI Agent 事件綁定仍在 `app.py`**，尚未完成全部 UI 拆分。
+- `rag_tfidf.py` 是 RAG 實作；`app.py` 保留 LLM Agent Tool Calling。
+
+此版本重點是保持原有可執行的課堂展示程式，同時建立後續拆分目錄；不要把目錄存在誤認為所有程式已完成分層。

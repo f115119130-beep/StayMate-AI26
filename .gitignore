@@ -1,21 +1,10 @@
-# API 金鑰與環境設定
 .env
 .env.*
 !.env.example
-
-# SQLite 資料庫
 *.db
-
-# Python 暫存檔
 __pycache__/
 *.pyc
-
-# 虛擬環境
-venv/
 .venv/
-
-# 其他產生的檔案
-node_modules/
-build/
-dist/
+venv/
 .gradio/
+.pytest_cache/
